@@ -1,0 +1,71 @@
+<!-- Basic document settings -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SUR Stand Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<!-- Basic info -->
+<body>
+
+  <h1 style="font-family: Arial, sans-serif; text-align: center;">
+  SUR Stand Calculator
+</h1>
+ <h6 style="font-family: Arial, sans-serif; text-align: center;">
+  By waffleoid
+</h6>
+  
+<!-- Calculations -->
+  <div class="calculator">
+    <!-- Input -->
+    <label>
+      Stand Chance:
+        <input type="number" id="standchance" step="0.001" value="10" min="0" max="100" 
+         oninput="if(value>100)value=100; if(value<0)value=0;">
+    </label>
+
+    <label>
+      Attribute Chance:
+      <input type="number" id="attributechance" step="0.001" value="10" min="0" max="100" 
+         oninput="if(value>100)value=100; if(value<0)value=0;">
+    </label>
+
+    <!-- Visual output -->
+    <div id="results">
+      <button onclick="calculate(); calculate();">Calculate</button>
+      <p>Chance: <span id="chanceresult">0</span>%</p>
+      <p>Acquired every <span id="averagearrowsresult"></span> arrows on average</p>
+      <p>Acquired every <span id="averagetimeresult"></span> hours on average at 800 arrows/hr</p>
+     
+       <!-- Calculation button and calculations -->
+       <script>
+        function calculate() {
+
+            const num1 = (parseFloat(document.getElementById("standchance").value) || 0) / 100;
+            const num2 = (parseFloat(document.getElementById("attributechance").value) || 0) / 100;
+            
+            <!-- % Chance calculation -->
+            const chancetotal = (num1 * num2)*100;
+            
+            document.getElementById("chanceresult").innerText = 
+            Number(chancetotal).toFixed(12).replace(/\.?0+$/, '');
+
+            <!-- Average amount of arrows -->
+            const averagearrowtotal = Math.round(1 / (num1 * num2));
+            
+            document.getElementById("averagearrowsresult").innerText = Number(averagearrowtotal).toLocaleString();
+
+            <!-- Average time needed to obtain -->
+            const averagetimetotal = (averagearrowtotal)/800;
+
+            document.getElementById("averagetimeresult").innerText = Number(averagetimetotal).toLocaleString();
+        }
+    </script>
+    </div>
+    
+  </div>
+</body>
+</html>
