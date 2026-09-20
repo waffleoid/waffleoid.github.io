@@ -20,53 +20,119 @@
   
 <!-- Calculations -->
   <div class="calculator">
-    <!-- Input -->
+    <!-- Inputs -->
     <label>
       Stand Chance:
-      <input type="number" id="standchance" step="0.001" value="10" min="0" max="100" 
-         oninput="if(value>100)value=100; if(value<0)value=0;">
+      <input type="number" id="standchance" step="0.001" value=".1" min="0" max="100" style="width: 8ch;"
+   oninput="if(value>100)value=100; if(value<0)value=0;">
           %
     </label>
     <br>
     <label>
       Attribute Chance:
-      <input type="number" id="attributechance" step="0.001" value="10" min="0" max="100" 
-         oninput="if(value>100)value=100; if(value<0)value=0;">
+      <input type="number" id="attributechance" step="0.001" value=".01" min="0" max="100" style="width: 8ch;"
+   oninput="if(value>100)value=100; if(value<0)value=0;">
           %
     </label>
 
     <!-- Visual output -->
     <div id="results">
-      <button onclick="calculate(); calculate();">Calculate</button>
       <p>Chance: <span id="chanceresult">X</span>% or 1 in <span id="averagearrowsresult">X</span> arrows </p>
-      <p>Acquired every <span id="averagetimeresult">X</span> hours on average at 800 arrows/hr</p>
-     
-       <!-- Calculation button and calculations -->
-       <script>
-        function calculate() {
-
-            const num1 = (parseFloat(document.getElementById("standchance").value) || 0) / 100;
-            const num2 = (parseFloat(document.getElementById("attributechance").value) || 0) / 100;
-            
-            <!-- % Chance calculation -->
-            const chancetotal = (num1 * num2)*100;
-            
-            document.getElementById("chanceresult").innerText = 
-            Number(chancetotal).toFixed(12).replace(/\.?0+$/, '');
-
-            <!-- Average amount of arrows -->
-            const averagearrowtotal = Math.round(1 / (num1 * num2));
-            
-            document.getElementById("averagearrowsresult").innerText = Number(averagearrowtotal).toLocaleString();
-
-            <!-- Average time needed to obtain -->
-            const averagetimetotal = (averagearrowtotal)/800;
-
-            document.getElementById("averagetimeresult").innerText = Number(averagetimetotal).toLocaleString();
-        }
-    </script>
+      <p>At <input type="text" class="number" id="hourlyarrows" inputmode="numeric" value="1,000" size="1"> arrows an hour, acquired every <span id="averagetimeresult">X</span> hours</p>
+      <p>Chance to obtain with <input type="text" class="number" id="arrowcount" inputmode="numeric"
+        value="10,000,000" size="7"> arrows is
+        <span id="obtainmentchance">X</span>%
+      </p>
     </div>
-    
   </div>
+
+  <script>
+    <!-- Arrow count input -->
+    const arrowInput = document.getElementById('arrowcount');
+    function getArrowCount() {
+      return Number(arrowInput.value.replace(/\D/g, '')) || 0;
+    }
+
+    arrowInput.addEventListener('input', () => {
+      const caret = arrowInput.selectionStart;
+      const digitsBefore = arrowInput.value.slice(0, caret).replace(/\D/g, '').length;
+
+      <!-- Remove everything but the digits -->
+      let digits = arrowInput.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+      arrowInput.value = digits ? Number(digits).toLocaleString('en-US') : '';
+
+      let pos = 0, seen = 0;
+      while (pos < arrowInput.value.length && seen < digitsBefore) {
+        if (/\d/.test(arrowInput.value[pos])) seen++;
+        pos++;
+      }
+      arrowInput.setSelectionRange(pos, pos);
+
+      calculate();
+    });
+
+    <!-- Autonomous updates on inputs -->
+    document.getElementById('standchance').addEventListener('input', calculate);
+    document.getElementById('attributechance').addEventListener('input', calculate);
+    const hourlyInput = document.getElementById('hourlyarrows');
+
+function getHourlyArrows() {
+  return Number(hourlyInput.value.replace(/\D/g, '')) || 0;
+}
+
+hourlyInput.addEventListener('input', () => {
+  const caret = hourlyInput.selectionStart;
+  const digitsBefore = hourlyInput.value.slice(0, caret).replace(/\D/g, '').length;
+
+  let digits = hourlyInput.value.replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+  hourlyInput.value = digits ? Number(digits).toLocaleString('en-US') : '';
+
+  let pos = 0, seen = 0;
+  while (pos < hourlyInput.value.length && seen < digitsBefore) {
+    if (/\d/.test(hourlyInput.value[pos])) seen++;
+    pos++;
+  }
+  hourlyInput.setSelectionRange(pos, pos);
+
+  calculate();
+});
+
+    <!-- Main calculation -->
+    function calculate() {
+      const num1 = (parseFloat(document.getElementById("standchance").value) || 0) / 100;
+      const num2 = (parseFloat(document.getElementById("attributechance").value) || 0) / 100;
+      const chancePerArrow = num1 * num2;
+
+      // No 0% results
+      if (chancePerArrow <= 0) {
+        document.getElementById("chanceresult").innerText = "0";
+        document.getElementById("averagearrowsresult").innerText = "∞";
+        document.getElementById("averagetimeresult").innerText = "∞";
+        document.getElementById("obtainmentchance").innerText = "0";
+        return;
+      }
+      <!-- Combined chance of arrows, handling float point -->
+      document.getElementById("chanceresult").innerText =
+        (chancePerArrow * 100).toFixed(12).replace(/\.?0+$/, '');
+
+      <!-- Calculating expected number of arrows for one success -->
+      const averagearrowtotal = Math.round(1 / chancePerArrow);
+      document.getElementById("averagearrowsresult").innerText =
+        averagearrowtotal.toLocaleString();
+
+      <!-- Real-world time to use that many arrows -->
+      const hourly = getHourlyArrows();
+      document.getElementById("averagetimeresult").innerText = hourly > 0
+        ? (averagearrowtotal / hourly).toLocaleString(undefined, { maximumFractionDigits: 2 })
+        : "∞";
+      
+      <!-- Chance of obtaining within X amount of arrows -->
+      const obtainmentchance = 1 - Math.pow(1 - chancePerArrow, getArrowCount());
+      document.getElementById("obtainmentchance").innerText =
+        (obtainmentchance * 100).toFixed(6).replace(/\.?0+$/, '');
+    }
+
+    calculate();
+  </script>
 </body>
 </html>
