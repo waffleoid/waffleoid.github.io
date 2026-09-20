@@ -23,21 +23,22 @@
     <!-- Input -->
     <label>
       Stand Chance:
-        <input type="number" id="standchance" step="0.001" value="10" min="0" max="100" 
+      <input type="number" id="standchance" step="0.001" value="10" min="0" max="100" 
          oninput="if(value>100)value=100; if(value<0)value=0;">
+          %
     </label>
-
+    <br>
     <label>
       Attribute Chance:
       <input type="number" id="attributechance" step="0.001" value="10" min="0" max="100" 
          oninput="if(value>100)value=100; if(value<0)value=0;">
+          %
     </label>
 
     <!-- Visual output -->
     <div id="results">
       <button onclick="calculate(); calculate();">Calculate</button>
-      <p>Chance: <span id="chanceresult">X</span>%</p>
-      <p>Acquired every <span id="averagearrowsresult">X</span> arrows on average</p>
+      <p>Chance: <span id="chanceresult">X</span>% or 1 in <span id="averagearrowsresult">X</span> arrows </p>
       <p>Acquired every <span id="averagetimeresult">X</span> hours on average at 800 arrows/hr</p>
      
        <!-- Calculation button and calculations -->
