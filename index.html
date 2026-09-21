@@ -5,44 +5,196 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SUR Stand Calculator</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --cover: #3B2519;
+  --cover-light: #54321F;
+  --gold: #a67f2f;
+  --gold-bright: #EFD98B;
+  --page: ##5b4435;
+  --ink: #3B2A1E;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 58px 20px;
+  background: #1C1410;
+  min-height: 100vh;
+  font-family: 'EB Garamond', serif;
+  color: var(--page);
+}
+
+.page-title,
+.page-byline {
+  display: none;
+}
+
+/* ===== The diary cover ===== */
+
+.diary {
+  max-width: 480px;
+  margin: 40px auto;
+  background: linear-gradient(160deg, var(--cover-light), var(--cover) 75%);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Title panel — sized to fit its text, sits at the top */
+
+.diary-title {
+  align-self: center;
+  border: 2px solid var(--gold);
+  padding: 20px 80px;
+  text-align: center;
+}
+
+.diary-title h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.04em;
+  margin: 0;
+}
+
+.diary-title p {
+  font-family: 'EB Garamond', serif;
+  font-style: italic;
+  color: var(--gold);
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+}
+
+/* Content panel — everything else lives together here */
+
+.diary-content {
+  border: 2px solid var(--gold);
+  background: var(--page);
+  padding: 28px 24px;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 38px,
+      rgba(59, 37, 25, 0.08) 39px
+    );
+}
+
+.stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(59, 37, 25, 0.25);
+}
+
+.cover-field {
+  text-align: center;
+}
+
+.cover-field label {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.8rem;
+  color: var(--gold-bright);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.field-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.field-value .unit {
+  color: var(--gold-bright);
+  font-size: 1.05rem;
+}
+
+.entry {
+  font-size: 1.1rem;
+  line-height: 39px;
+  color: var(--gold-bright);
+  margin: 0;
+}
+
+/* Inputs sitting inline in the diary text */
+
+input {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.05rem;
+  text-align: center;
+  border: none;
+  border-bottom: 2px solid var(--gold-bright);
+  background: transparent;
+  color: var(--gold-bright);
+  padding: 0 2px;
+}
+
+input:focus {
+  outline: none;
+  border-bottom-color: var(--gold);
+  background: rgba(201, 162, 39, 0.12);
+}
+
+
+/* ===== Responsive ===== */
+
+@media (max-width: 420px) {
+  .stat-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .entry {
+    font-size: 1rem;
+  }
+}
+  </style>
 </head>
 
 <!-- Basic info -->
 <body>
 
-  <h1 style="font-family: Arial, sans-serif; text-align: center;">
-  SUR Stand Calculator
-</h1>
- <h6 style="font-family: Arial, sans-serif; text-align: center;">
-  By waffleoid
-</h6>
-  
 <!-- Calculations -->
-  <div class="calculator">
-    <!-- Inputs -->
-    <label>
-      Stand Chance:
-      <input type="number" id="standchance" step="0.001" value=".1" min="0" max="100" style="width: 8ch;"
-   oninput="if(value>100)value=100; if(value<0)value=0;">
-          %
-    </label>
-    <br>
-    <label>
-      Attribute Chance:
-      <input type="number" id="attributechance" step="0.001" value=".01" min="0" max="100" style="width: 8ch;"
-   oninput="if(value>100)value=100; if(value<0)value=0;">
-          %
-    </label>
+  <div class="diary">
 
-    <!-- Visual output -->
-    <div id="results">
-      <p>Chance: <span id="chanceresult">X</span>% or 1 in <span id="averagearrowsresult">X</span> arrows </p>
-      <p>At <input type="text" class="number" id="hourlyarrows" inputmode="numeric" value="1,000" size="1"> arrows an hour, spawns on average every <span id="averagetimeresult">X</span> hours</p>
-      <p>Chance to obtain with <input type="text" class="number" id="arrowcount" inputmode="numeric"
-        value="10,000,000" size="7"> arrows is
-        <span id="obtainmentchance">X</span>%
-      </p>
+    <!-- Title panel: sized to fit the text, sits at the top -->
+    <div class="diary-title">
+      <h1>SUR Stand Calculator</h1>
+      <p>By waffleoid</p>
+    </div>
+
+    <!-- Content panel: everything else, unchanged -->
+    <div class="diary-content">
+      <div class="stat-row">
+        <div class="cover-field">
+          <label for="standchance">Stand Chance</label>
+          <div class="field-value">
+            <input type="number" id="standchance" step="0.001" value=".1" min="0" max="100" style="width: 4ch;"
+              oninput="if(value>100)value=100; if(value<0)value=0;">
+            <span class="unit">%</span>
+          </div>
+        </div>
+        <div class="cover-field">
+          <label for="attributechance">Attribute Chance</label>
+          <div class="field-value">
+            <input type="number" id="attributechance" step="0.001" value=".01" min="0" max="100" style="width: 4ch;"
+              oninput="if(value>100)value=100; if(value<0)value=0;">
+            <span class="unit">%</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="entry">Chance: <span id="chanceresult">X</span>% or 1 in <span id="averagearrowsresult">X</span> arrows</p>
+      <p class="entry">At <input type="text" class="number" id="hourlyarrows" inputmode="numeric" value="1,000" style="width: 5ch;"> arrows an hour, acquired every <span id="averagetimeresult">X</span> hours</p>
+      <p class="entry">Chance to obtain with <input type="text" class="number" id="arrowcount" inputmode="numeric" value="10,000,000" style="width: 9ch;"> arrows is <span id="obtainmentchance">X</span>%</p>
     </div>
   </div>
 
@@ -125,7 +277,7 @@ hourlyInput.addEventListener('input', () => {
       document.getElementById("averagetimeresult").innerText = hourly > 0
         ? (averagearrowtotal / hourly).toLocaleString(undefined, { maximumFractionDigits: 2 })
         : "∞";
-      
+
       <!-- Chance of obtaining within X amount of arrows -->
       const obtainmentchance = 1 - Math.pow(1 - chancePerArrow, getArrowCount());
       document.getElementById("obtainmentchance").innerText =
