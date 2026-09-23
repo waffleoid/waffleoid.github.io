@@ -13,7 +13,6 @@
   --cover-light: #54321F;
   --gold: #a67f2f;
   --gold-bright: #EFD98B;
-  --page: ##5b4435;
   --ink: #3B2A1E;
 }
 
@@ -85,6 +84,38 @@ body {
     );
 }
 
+/* Arrow type toggle */
+
+.arrow-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 16px;
+  border: 1px solid var(--gold);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.arrow-toggle button {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  background: transparent;
+  color: var(--gold-bright);
+  border: none;
+  padding: 8px 18px;
+  cursor: pointer;
+}
+
+.arrow-toggle button + button {
+  border-left: 1px solid var(--gold);
+}
+
+.arrow-toggle button.active {
+  background: var(--gold);
+  color: var(--cover);
+}
 .stat-row {
   display: flex;
   justify-content: center;
@@ -144,13 +175,39 @@ input:focus {
   background: rgba(201, 162, 39, 0.12);
 }
 
+/* Stand / Attribute dropdowns, styled to match the inline inputs */
+
+select {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  text-align: center;
+  text-align-last: center;
+  border: none;
+  border-bottom: 2px solid var(--gold-bright);
+  background: transparent;
+  color: var(--gold-bright);
+  padding: 2px 4px;
+  max-width: 190px;
+  
+}
+
+select:focus {
+  outline: none;
+  border-bottom-color: var(--gold);
+  background: rgba(201, 162, 39, 0.12);
+}
+
+select option {
+  background: var(--cover);
+  color: var(--gold-bright);
+}
 
 /* ===== Responsive ===== */
 
 @media (max-width: 420px) {
   .stat-row {
     flex-direction: column;
-    gap: 12px;
+    gap: 48px;
   }
   .entry {
     font-size: 1rem;
@@ -169,25 +226,29 @@ input:focus {
     <div class="diary-title">
       <h1>SUR Stand Calculator</h1>
       <p>By waffleoid</p>
+      <p>Version 1.1.1</p>
     </div>
 
-    <!-- Content panel: everything else, unchanged -->
+    <!-- Content panel: everything else -->
     <div class="diary-content">
+
+      <!-- Arrow type toggle -->
+      <div class="arrow-toggle">
+        <button type="button" id="regularArrowBtn" class="active">Regular Arrows</button>
+        <button type="button" id="chargedArrowBtn">Charged Arrows</button>
+      </div>
+
       <div class="stat-row">
         <div class="cover-field">
-          <label for="standchance">Stand Chance</label>
+          <label for="standchance">Stand</label>
           <div class="field-value">
-            <input type="number" id="standchance" step="0.001" value=".1" min="0" max="100" style="width: 5ch;"
-              oninput="if(value>100)value=100; if(value<0)value=0;">
-            <span class="unit">%</span>
+            <select id="standchance"></select>
           </div>
         </div>
         <div class="cover-field">
-          <label for="attributechance">Attribute Chance</label>
+          <label for="attributechance">Attribute</label>
           <div class="field-value">
-            <input type="number" id="attributechance" step="0.001" value=".01" min="0" max="100" style="width: 4ch;"
-              oninput="if(value>100)value=100; if(value<0)value=0;">
-            <span class="unit">%</span>
+            <select id="attributechance"></select>
           </div>
         </div>
       </div>
@@ -198,7 +259,198 @@ input:focus {
     </div>
   </div>
 
+
   <script>
+    // ===== Stand / Attribute data =====
+    // Each entry's "chance" is the raw percentage (e.g. 7.5 means 7.5%)
+
+    const regularStands = [
+      { name: "Silver Chariot", chance: 7.5 },
+      { name: "Cream", chance: 7.5 },
+      { name: "Hierophant Green", chance: 7.5 },
+      { name: "Sticky Fingers", chance: 7.5 },
+      { name: "Star Platinum", chance: 7.5 },
+      { name: "Killer Queen", chance: 7.5 },
+      { name: "Aerosmith", chance: 5 },
+      { name: "Star Platinum: Stone Ocean", chance: 5 },
+      { name: "Crazy Diamond", chance: 5 },
+      { name: "The Emperor", chance: 5 },
+      { name: "Stone Free", chance: 5 },
+      { name: "The Hand", chance: 5 },
+      { name: "Soft And Wet", chance: 3.75 },
+      { name: "Magician's Red", chance: 3.25 },
+      { name: "Purple Smoke", chance: 2.5 },
+      { name: "Whitesnake", chance: 2.5 },
+      { name: "Diver Down", chance: 2.5 },
+      { name: "The World", chance: 2 },
+      { name: "Weather Report", chance: 1.5 },
+      { name: "Gold Experience", chance: 1 },
+      { name: "King Crimson", chance: 1 },
+      { name: "D4C", chance: 1 },
+      { name: "Premier Macho", chance: 1 },
+      { name: "Silver Chariot OVA", chance: 0.3 },
+      { name: "Hierophant Green OVA", chance: 0.3 },
+      { name: "Magician's Red OVA", chance: 0.3 },
+      { name: "The World OVA", chance: 0.1 },
+      { name: "Star Platinum OVA", chance: 0.05 },
+      { name: "Sun", chance: 0.000333333},
+      { name: "IBM", chance: 0.000333333}
+    ];
+
+    const chargedStands = [
+      { name: "Silver Chariot", chance: 15 },
+      { name: "Crazy Diamond", chance: 15 },
+      { name: "Star Platinum", chance: 10 },
+      { name: "Hierophant Green", chance: 10 },
+      { name: "Killer Queen", chance: 10 },
+      { name: "The Hand", chance: 10 },
+      { name: "Golden Experience", chance: 5 },
+      { name: "King Crimson", chance: 5 },
+      { name: "Tusk Act 1", chance: 5 },
+      { name: "The World", chance: 5 },
+      { name: "D4C", chance: 5 },
+      { name: "Whitesnake", chance: 4.9 },
+      { name: "The World: Alternate Universe", chance: 2 },
+      { name: "Vanilla Ice's Cream", chance: 0.5 },
+      { name: "DIO's The World", chance: 0.1 },
+      { name: "Jotaro's Star Platinum", chance: 0.1 },
+      { name: "Sunlit Crusader", chance: 0.015 },
+      { name: "Universal Remnant", chance: 0.015 }
+    ];
+
+    const attributes = [
+      { name: "Any", chance: 100 },
+      { name: "None", chance: 49.77 },
+      { name: "Strong", chance: 9.93 },
+      { name: "Tough", chance: 9 },
+      { name: "Sloppy", chance: 7 },
+      { name: "Powerful", chance: 5 },
+      { name: "Manic", chance: 5 },
+      { name: "Enrage", chance: 5 },
+      { name: "Lethargic", chance: 4.79 },
+      { name: "Godly", chance: 3 },
+      { name: "Daemon", chance: 1 },
+      { name: "Glass Cannon", chance: 0.25 },
+      { name: "Invincible", chance: 0.1 },
+      { name: "Tragic", chance: 0.1 },
+      { name: "Hacker", chance: 0.06 },
+      { name: "Scourge", chance: 0.04 },
+      { name: "Legendary", chance: 0.01 }
+    ];
+
+ // ===== Populate a <select> from a data array =====
+    function populateSelect(selectEl, data) {
+      selectEl.innerHTML = '';
+      data.forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.chance;
+        opt.dataset.name = item.name;
+        opt.textContent = `${item.name} (${item.chance}%)`;
+        selectEl.appendChild(opt);
+      });
+    }
+
+ const standSelect = document.getElementById('standchance');
+    const attributeSelect = document.getElementById('attributechance');
+
+    // ===== Shrink a select's font only if the selected text overflows =====
+    const measureCanvas = document.createElement('canvas');
+    const measureCtx = measureCanvas.getContext('2d');
+
+    function fitSelectText(selectEl) {
+      const baseSize = 15.2; // matches 0.95rem at a 16px root
+      const minSize = 9;
+
+      selectEl.style.fontSize = baseSize + 'px';
+
+      const text = selectEl.options[selectEl.selectedIndex]
+        ? selectEl.options[selectEl.selectedIndex].textContent
+        : '';
+
+      const style = getComputedStyle(selectEl);
+      const available = selectEl.clientWidth - 12;
+
+      let size = baseSize;
+      measureCtx.font = `${style.fontWeight} ${size}px ${style.fontFamily}`;
+
+      while (measureCtx.measureText(text).width > available && size > minSize) {
+        size -= 0.5;
+        measureCtx.font = `${style.fontWeight} ${size}px ${style.fontFamily}`;
+      }
+
+      selectEl.style.fontSize = size + 'px';
+    }
+
+    function fitBothSelects() {
+      fitSelectText(standSelect);
+      fitSelectText(attributeSelect);
+    }
+
+    // Remembers the last Stand picked under each arrow type independently
+        // Remembers the last Stand picked under each arrow type independently
+    let currentArrowType = 'regular';
+    const lastStandByType = { regular: null, charged: null };
+
+    function selectByName(selectEl, name) {
+      const match = [...selectEl.options].find(o => o.dataset.name === name);
+      if (match) selectEl.selectedIndex = match.index;
+    }
+
+    populateSelect(standSelect, regularStands);
+    populateSelect(attributeSelect, attributes);
+
+    // ===== Default selection on page load =====
+    selectByName(standSelect, "The World OVA");
+    selectByName(attributeSelect, "Legendary");
+    lastStandByType.regular = "The World OVA";
+
+    fitBothSelects();
+    standSelect.addEventListener('change', () => {
+      lastStandByType[currentArrowType] = standSelect.options[standSelect.selectedIndex].dataset.name;
+      fitSelectText(standSelect);
+      calculate();
+    });
+    attributeSelect.addEventListener('change', () => {
+      fitSelectText(attributeSelect);
+      calculate();
+    });
+
+    // ===== Arrow type toggle =====
+    const regularBtn = document.getElementById('regularArrowBtn');
+    const chargedBtn = document.getElementById('chargedArrowBtn');
+
+    regularBtn.addEventListener('click', () => {
+      regularBtn.classList.add('active');
+      chargedBtn.classList.remove('active');
+      currentArrowType = 'regular';
+      populateSelect(standSelect, regularStands);
+
+      const remembered = lastStandByType.regular;
+      if (remembered) {
+        const match = [...standSelect.options].find(o => o.dataset.name === remembered);
+        if (match) standSelect.selectedIndex = match.index;
+      }
+
+      fitSelectText(standSelect);
+      calculate();
+    });
+
+    chargedBtn.addEventListener('click', () => {
+      chargedBtn.classList.add('active');
+      regularBtn.classList.remove('active');
+      currentArrowType = 'charged';
+      populateSelect(standSelect, chargedStands);
+
+      const remembered = lastStandByType.charged;
+      if (remembered) {
+        const match = [...standSelect.options].find(o => o.dataset.name === remembered);
+        if (match) standSelect.selectedIndex = match.index;
+      }
+
+      fitSelectText(standSelect);
+      calculate();
+    });
+
     <!-- Arrow count input -->
     const arrowInput = document.getElementById('arrowcount');
     function getArrowCount() {
@@ -222,10 +474,6 @@ input:focus {
 
       calculate();
     });
-
-    <!-- Autonomous updates on inputs -->
-    document.getElementById('standchance').addEventListener('input', calculate);
-    document.getElementById('attributechance').addEventListener('input', calculate);
     const hourlyInput = document.getElementById('hourlyarrows');
 
 function getHourlyArrows() {
